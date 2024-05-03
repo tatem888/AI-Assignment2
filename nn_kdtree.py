@@ -83,12 +83,12 @@ def NNSearchKDTree(testDataFrame, currentNode, currentDepth):
     #get initial dimension and compare test data dimension to root node dimension
 
     dimension = currentDepth % 11
-    rootValue = currentNode.value
+    rootValue = float(currentNode.value)
 
     currentNode = currentNode
 
     testNumPy = testDataFrame.to_numpy()
-    testCurrentValue = testNumPy[dimension]
+    testCurrentValue = float(testNumPy[dimension])
 
     if currentNode.left is None and currentNode.right is None:
 
