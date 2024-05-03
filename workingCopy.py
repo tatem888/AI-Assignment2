@@ -7,7 +7,7 @@ def readCommandLine():
 
     trainingDataFile = sys.argv[1]
     testDataFile = sys.argv[2]
-    initialDimension = sys.argv[3]
+    initialDimension = int(sys.argv[3])
 
     return (trainingDataFile, testDataFile, initialDimension)
 
@@ -47,7 +47,6 @@ def buildKDTree(trainingDataFrame, currentDepth):
 
         #create and return single new node
         point = trainingDataFrame.index[0]
-
         node = Node(value, dimension)
         node.point = point
 
@@ -71,64 +70,74 @@ def buildKDTree(trainingDataFrame, currentDepth):
     
 #Implement tree search
 
-#for each line in testing input, run search alg to find nearest neighbour 
+#euclidian distance calculation using numpy
 
+def euclideanDistance(point1, point2):
 
-#pass in single line dataframe
-def NNSearchKDTree(testDataFrame, currentNode, currentDepth):
-
+    distance = np.linalg.norm(point1 - point2)
+    return distance
     
-    #naive implementation, drop to bottom of tree
-    #get initial dimension and compare test data dimension to root node dimension
 
+def NNSearchKDTree(testDataFrame, currentNode, currentDepth):
+    
+    if currentNode is None:
+        return None
+    
     dimension = currentDepth % 11
     rootValue = currentNode.value
+    testValue = testDataFrame[dimension]
 
-    currentNode = currentNode
-
-    testCurrentValue = testDataFrame.iloc[dimension]
+    nextNode = None
+    backTrackNode = None
 
     if currentNode.left is None and currentNode.right is None:
 
-        return currentNode
+        return currentNode.point
         
 
-    elif testCurrentValue > rootValue:
+    if testValue <= rootValue:
 
-        return NNSearchKDTree(testDataFrame, currentNode.right, currentDepth+1)
+        nextNode = currentNode.left
+        backTrackNode = currentNode.right
 
-    elif testCurrentValue <= rootValue:
+    else:
+
+        nextNode = currentNode.right
+        backTrackNode = currentNode.left
+    
+    best = NNSearchKDTree(testDataFrame, nextNode, currentDepth+1)
+
+
+    # if distance between test point and current best is larger than the current node value
+    # backtrack and check  backtrack node, and update if required, run recursion again
+    if euclideanDistance(testDataFrame, best) > abs(rootValue-testValue):
+
+        potentialBest = NNSearchKDTree(testDataFrame, backTrackNode,currentDepth+1)
+
+        if euclideanDistance(testDataFrame, testDataFrame) < euclideanDistance(testDataFrame, best):
         
-        return NNSearchKDTree(testDataFrame, currentNode.left, currentDepth+1)
+            best = potentialBest
+    
+    return best
 
     
 ##Test
 
-
-
-trainingDataFile = sys.argv[1]
-testDataFile = sys.argv[2]
-
-initialDimension = int(sys.argv[3])
-
-
+trainingDataFile, testDataFile, initialDimension = readCommandLine()
 dfs = createDataFrames(trainingDataFile, testDataFile)
 trainingDataFrame = dfs[0]
 testDataFrame = dfs[1]
 
-tree_test = buildKDTree(trainingDataFrame, initialDimension)
+KDTree = buildKDTree(trainingDataFrame, initialDimension)
 
 numOfTests = testDataFrame.shape[0]
 
-index = 0
-while index < numOfTests:
+for index in range(numOfTests):
     
     currentTestFrame = testDataFrame.iloc[index]
 
-    nearestNeighbour = NNSearchKDTree(currentTestFrame, tree_test, initialDimension)
+    nearestNeighbour = NNSearchKDTree(currentTestFrame, KDTree, initialDimension)
     
 
-    print(trainingDataFrame.iloc[nearestNeighbour.point,11])
-
-    index = index+1
+    print(nearestNeighbour)
 
