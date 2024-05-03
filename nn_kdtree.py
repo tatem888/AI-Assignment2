@@ -52,8 +52,6 @@ def buildKDTree(trainingDataFrame, currentDepth):
         node = Node(value, dimension)
         node.point = point
 
-        print (point)
-
         return node
 
 
@@ -76,6 +74,8 @@ def buildKDTree(trainingDataFrame, currentDepth):
 
 #for each line in testing input, run search alg to find nearest neighbour 
 
+
+#pass in single line dataframe
 def NNSearchKDTree(testDataFrame, currentNode, currentDepth):
 
     
@@ -87,26 +87,35 @@ def NNSearchKDTree(testDataFrame, currentNode, currentDepth):
 
     dimensionString = testDataFrame.columns[dimension]
 
-    testDataCurrentValue = testDataFrame[testDataFrame[dimensionString]]
+    testNumPy = testDataFrame.to_numpy()
+    testCurrentValue = testNumPy[0,dimension]
 
     if currentNode.point != None:
 
         print("Reached Leaf")
         return currentNode
     
-    elif testDataCurrentValue > rootValue:
+    elif testCurrentValue > rootValue:
+
+        print("search right")
 
         NNSearchKDTree(testDataFrame, currentNode.right, currentDepth+1)
 
-    elif testDataCurrentValue <= rootValue:
-
+    elif testCurrentValue <= rootValue:
+        print("search left")
         NNSearchKDTree(testDataFrame, currentNode.left, currentDepth+1)
 
 ##Test
 
-dfs = createDataFrames("train", "test-sample")
 
-tree_test = buildKDTree(dfs[0], 4)
 
-search_test = NNSearchKDTree(dfs[1],tree_test, 1)
+trainingDataFile = sys.argv[1]
+testDataFile = sys.argv[2]
+initialDimension = sys.argv[3]
 
+dfs = createDataFrames(trainingDataFile, testDataFile)
+
+tree_test = buildKDTree(dfs[0], initialDimension)
+
+numOfTests = dfs[1].ndims[0]
+print(numOfTests)
