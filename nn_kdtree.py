@@ -85,37 +85,52 @@ def NNSearchKDTree(testDataFrame, currentNode, currentDepth):
     dimension = currentDepth % 11
     rootValue = currentNode.value
 
-    dimensionString = testDataFrame.columns[dimension]
+    currentNode = currentNode
 
     testNumPy = testDataFrame.to_numpy()
-    testCurrentValue = testNumPy[0,dimension]
+    testCurrentValue = testNumPy[dimension]
 
-    if currentNode.point != None:
+    if currentNode.left is None and currentNode.right is None:
 
-        print("Reached Leaf")
         return currentNode
-    
+        
+
     elif testCurrentValue > rootValue:
 
-        print("search right")
-
-        NNSearchKDTree(testDataFrame, currentNode.right, currentDepth+1)
+        return NNSearchKDTree(testDataFrame, currentNode.right, currentDepth+1)
 
     elif testCurrentValue <= rootValue:
-        print("search left")
-        NNSearchKDTree(testDataFrame, currentNode.left, currentDepth+1)
+        
+        return NNSearchKDTree(testDataFrame, currentNode.left, currentDepth+1)
 
+    
 ##Test
 
 
 
 trainingDataFile = sys.argv[1]
 testDataFile = sys.argv[2]
-initialDimension = sys.argv[3]
+
+initialDimension = int(sys.argv[3])
+
 
 dfs = createDataFrames(trainingDataFile, testDataFile)
+trainingDataFrame = dfs[0]
+testDataFrame = dfs[1]
 
-tree_test = buildKDTree(dfs[0], initialDimension)
+tree_test = buildKDTree(trainingDataFrame, initialDimension)
 
-numOfTests = dfs[1].ndims[0]
-print(numOfTests)
+numOfTests = testDataFrame.shape[0]
+
+index = 0
+while index < numOfTests:
+    
+    currentTestFrame = testDataFrame.iloc[index]
+
+    nearestNeighbour = NNSearchKDTree(currentTestFrame, tree_test, initialDimension)
+    
+
+    print(trainingDataFrame.iloc[nearestNeighbour.point,11])
+
+    index = index+1
+
